@@ -28,6 +28,8 @@
 		let context;
 		let simulation;
         let simTickRate = 100;
+        let mouseDrawing = false;
+        let mouseCoords = {x: 0, y: 0};
         
 		window.addEventListener("load", function() {
 			canvas = document.getElementById('mainCanvas');
@@ -37,14 +39,21 @@
 			simulation = new Engine(canvas, context);
             
             // Setup mouse movement
-            canvas.addEventListener('onmousedown', e => {
-                simulation.onMouseDown(getMousePos(canvas, e));
+            canvas.addEventListener('mousedown', e => {
+                mouseDrawing = true;
+                mouseCoords = getMousePos(canvas, e);
             });
-            canvas.addEventListener('onmouseup', e => {
-                simulation.onMouseUp(getMousePos(canvas, e));
+            canvas.addEventListener('mousemove', e=> {
+                mouseCoords = getMousePos(canvas, e);
             });
-            canvas.addEventListener('onmousemove', e => {
-                simulation.onMouseMove(getMousePos(canvas, e));
+            canvas.addEventListener('mouseup', e => {
+                mouseDrawing = false;
+            });
+            canvas.addEventListener('mouseout', e => {
+                mouseDrawing = false;
+            });
+            document.addEventListener('keydown', e=> {
+                simulation.onKeyboardDown(e);
             });
             
             // Start render tick
@@ -60,6 +69,9 @@
         
         function simTick() {
             //simulation.renderTick(canvas, context);
+            
+            if (mouseDrawing) simulation.onMouseDown(mouseCoords);
+            
             simulation.simTick();
             if (simTickRate <= 10) {
                 window.setZeroTimeout(simTick);
