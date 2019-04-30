@@ -5,12 +5,60 @@
         constructor(canvas, ctx) {
             console.log('hello world!');
             
-            this.width = canvas.width;
-            this.height = canvas.height;
+            this.scale = 6;
             
-            console.log(this.width);
-            console.log(this.height);
+            this._canvas = canvas;
+            this._context = ctx;
             
+            this.width = canvas.width/this.scale;
+            this.height = canvas.height/this.scale;
+            
+            this.reset();
+        }
+        
+        simTick() {
+            let spawnVec = new iVec2D(Math.floor(this.width/2), 0);
+            
+            if (this.gridList[spawnVec.x][spawnVec.y] !== null) {
+                this.reset();
+            }
+            
+            this.createSand(spawnVec, 'sand');
+            this.sandList.forEach((e) => {
+                e.simTick();
+            });
+        }
+        
+        renderTick(cnv, ctx) {
+            ctx.putImageData(this.gridImgData, 0, 0);
+        }
+        
+        createSand(pos, type) {
+            let s = new Sand(
+                pos,
+                'sand',
+                this.gridList,
+                this.gridImgData,
+                this.scale
+            );
+            
+            this.gridList[pos.x][pos.y] = s;
+            this.sandList.push(s);
+        }
+        
+        onMouseDown(mousePos) {
+            
+        }
+        
+        onMouseUp(mousePos) {
+            
+        }
+        
+        onMouseMove(mousePos) {
+            
+        }
+        
+        reset() {
             this.gridList = [];
             for (var i = 0; i < this.width; i++) {
                 this.gridList.push([]);
@@ -19,27 +67,12 @@
                 }
             }
             
-            this.gridImgData = ctx.getImageData(0,0,this.width,this.height);
-        }
-        
-        simTick() {
-            this.gridList[Math.floor(this.width/2)][10] = new Sand(
-                new iVec2D(Math.floor(this.width/2), 10),
-                'sand',
-                this.gridList,
-                this.gridImgData
-            );
+            this._context.fillStyle = 'rgb(172, 177, 196)';
+            this._context.fillRect(0,0,this.width*this.scale,this.height*this.scale);
             
-            for (var i = 0; i < this.width; i++) {
-                for (var j = 0; j < this.height; j++) {
-                    if (this.gridList[i][j])
-                        this.gridList[i][j].simTick();
-                }
-            }
-        }
-        
-        renderTick(cnv, ctx) {
-            ctx.putImageData(this.gridImgData, 0, 0);
+            this.gridImgData = this._context.getImageData(0,0,this.width*this.scale,this.height*this.scale);
+            
+            this.sandList = [];
         }
     }
     window.Engine = Engine;
@@ -118,7 +151,7 @@
     window.iVec2D = iVec2D;
     
     class Sand {
-        constructor(pos, type, gridList, gridImgData) {
+        constructor(pos, type, gridList, gridImgData, size=1) {
             if (!Sand.types.includes(type)) throw new Error('Invalid Sand type!');
             if (!(pos instanceof iVec2D)) throw new Error('Sand requires an iVec2D for position.');
             if (!(gridList instanceof Array)) throw new Error('Sand requires an array for gridList.');
@@ -128,6 +161,7 @@
             this.gridList = gridList;
             this.gridImgData_ptr = gridImgData;
             this.gridImgData = gridImgData.data;
+            this.pixelSize = size;
         }
         
         checkBelow() {
@@ -140,7 +174,7 @@
                 return new iVec2D(p.x, p.y+1);
             }
             
-            if (p.x <= 0 || p.x >= g.length) return this.pos;
+            if (p.x <= 0 || p.x >= g.length-1) return this.pos;
             
             let goLeftFirst = randGen.coinFlip();
             let xDelta = 1;
@@ -164,24 +198,30 @@
                 this.gridList[newPos.x][newPos.y] = this;
                 this.gridList[this.pos.x][this.pos.y] = null;
                 
-                let newColorPos = (newPos.x * this.gridList.length) + newPos.y;
-                let oldColorPos = (this.pos.x * this.gridList.length) + this.pos.y;
-                
-                this.gridImgData[newColorPos] = Sand.colors[this.type][0];
-                this.gridImgData[newColorPos+1] = Sand.colors[this.type][1];
-                this.gridImgData[newColorPos+2] = Sand.colors[this.type][2];
-                
-                this.gridImgData[oldColorPos] = Sand.colors['none'][0];
-                this.gridImgData[oldColorPos+1] = Sand.colors['none'][1];
-                this.gridImgData[oldColorPos+2] = Sand.colors['none'][2];
+                this.setPixel(newPos.x, newPos.y, Sand.colors[this.type]);
+                this.setPixel(this.pos.x, this.pos.y, Sand.colors['none']);
                 
                 this.pos = newPos;
+            }
+        }
+        
+        setPixel(x, y, col, size=this.pixelSize) {
+            let newX = x * size;
+            let newY = y * size;
+            
+            for (var yDelta = 0; yDelta < size; yDelta++) {
+                for (var xDelta = 0; xDelta < size; xDelta++) {
+                    let newPos = ((newX + xDelta) + ((newY + yDelta) * (this.gridImgData_ptr.width))) * 4;
+                    this.gridImgData[newPos] = col[0];
+                    this.gridImgData[newPos+1] = col[1];
+                    this.gridImgData[newPos+2] = col[2];
+                }
             }
         }
     }
     Sand.types  = ['sand', 'water', 'stone', 'none'];
     Sand.colors = {
-        'sand': [196, 196, 9],
+        'sand': [231, 234, 18],
         'water': [28, 104, 219],
         'stone': [58, 59, 63],
         'none': [172, 177, 196]

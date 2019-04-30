@@ -21,28 +21,72 @@
 		}
 	</style>
     
+    <script type="text/javascript" src="timeout.js"></script>
     <script type="text/javascript" src="engine.js"></script>
     <script type="text/javascript">
-		var canvas;
-		var context;
-		var scene;
+		let canvas;
+		let context;
+		let simulation;
+        let simTickRate = 100;
+        
 		window.addEventListener("load", function() {
 			canvas = document.getElementById('mainCanvas');
 			context = canvas.getContext("2d");
-			scene = new Engine(canvas, context);
             
+            // Initialize engine
+			simulation = new Engine(canvas, context);
+            
+            // Setup mouse movement
+            canvas.addEventListener('onmousedown', e => {
+                simulation.onMouseDown(getMousePos(canvas, e));
+            });
+            canvas.addEventListener('onmouseup', e => {
+                simulation.onMouseUp(getMousePos(canvas, e));
+            });
+            canvas.addEventListener('onmousemove', e => {
+                simulation.onMouseMove(getMousePos(canvas, e));
+            });
+            
+            // Start render tick
             requestAnimationFrame(renderTick);
             
+            // Start sim tick
+            if (simTickRate > 10) {
+                window.setInterval(simTick, simTickRate);
+            } else {
+                window.setZeroTimeout(simTick);
+            }
 		});
         
+        function simTick() {
+            //simulation.renderTick(canvas, context);
+            simulation.simTick();
+            if (simTickRate <= 10) {
+                window.setZeroTimeout(simTick);
+            }
+        }
+        
         function renderTick() {
-            scene.simTick();
-            scene.renderTick(canvas, context);
+            //simTick();
+            simulation.renderTick(canvas, context);
             requestAnimationFrame(renderTick);
         }
+        
+        // https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas
+        function  getMousePos(canvas, evt) {
+            let rect = canvas.getBoundingClientRect(); // abs. size of element
+            let scaleX = canvas.width / rect.width;    // relationship bitmap vs. element for X
+            let scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for Y
+
+            return {
+                x: (evt.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
+                y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
+            }
+        }
+        
     </script>
 </head>
 <body>
-    <canvas id="mainCanvas" width="600" height="600"></canvas>
+    <canvas id="mainCanvas" onmousedown="" width="1200" height="600"></canvas>
 </body>
 </html>
