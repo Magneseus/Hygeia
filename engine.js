@@ -22,8 +22,9 @@
         simTick() {
             let spawnVec = new iVec2D(Math.floor(this.width/2), 0);
             
-            if (this.gridList[spawnVec.x][spawnVec.y] === null) {
-                //this.reset();
+            if (this.gridList[spawnVec.x][spawnVec.y] !== null) {
+                this.reset();
+            } else {
                 this.createSand(spawnVec, 'sand');
             }
             
@@ -43,6 +44,15 @@
         
         createSand(pos, type) {
             if (this.gridList[pos.x][pos.y] !== null) {
+                if (type === 'none') {
+                    let tmp = this.gridList[pos.x][pos.y];
+                    this.gridList[pos.x][pos.y] = null;
+                    this.sandList.splice(this.sandList.indexOf(tmp), 1);
+                }
+                return;
+            }
+            
+            if (type === 'none') {
                 return;
             }
             
