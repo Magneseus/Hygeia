@@ -16,7 +16,7 @@
             this.reset();
             
             this.currentSandType = 0;
-            this.newSandSpawn = null;
+            this.newSandSpawn = [];
         }
         
         simTick() {
@@ -25,12 +25,13 @@
             if (this.gridList[spawnVec.x][spawnVec.y] !== null) {
                 this.reset();
             } else {
-                this.createSand(spawnVec, 'sand');
+                Sand.createSand(this, spawnVec, 'sand');
             }
             
-            if (this.newSandSpawn !== null) {
-                this.createSand(this.newSandSpawn.pos, this.newSandSpawn.type);
-                this.newSandSpawn = null;
+            // Spawn new entities
+            while (this.newSandSpawn.length > 0) {
+                let sandSpawn = this.newSandSpawn.shift();
+                Sand.createSand(this, sandSpawn.pos, sandSpawn.type);
             }
             
             this.sandList.forEach((e) => {
@@ -42,51 +43,32 @@
             ctx.putImageData(this.gridImgData, 0, 0);
         }
         
-        createSand(pos, type) {
-            if (this.gridList[pos.x][pos.y] !== null) {
-                if (type === 'none') {
-                    let tmp = this.gridList[pos.x][pos.y];
-                    this.gridList[pos.x][pos.y] = null;
-                    this.sandList.splice(this.sandList.indexOf(tmp), 1);
-                }
-                return;
-            }
-            
-            if (type === 'none') {
-                return;
-            }
-            
-            let s = new Sand(
-                pos,
-                type,
-                this.gridList,
-                this.gridImgData,
-                this.scale
-            );
-            
-            this.gridList[pos.x][pos.y] = s;
-            this.sandList.push(s);
-            s.renderTick();
-        }
-        
         onKeyboardDown(event) {
             if (!event.repeat) {
-                if (event.key === '1') {
-                    this.currentSandType = 1;
-                } else if (event.key === '2') {
-                    this.currentSandType = 2;
-                } else if (event.key === '3') {
-                    this.currentSandType = 3;
-                } else if (event.key === '0') {
-                    this.currentSandType = 0;
+                let parsed = parseInt(event.key, 10);
+                if (isNaN(parsed)) {
+                    parsed = 0;
                 }
+                
+                this.currentSandType = parsed;
             }
+        }
+        
+        queueCreateSand(pos, type) {
+            let sType = null;
+            if (Number.isInteger(type)) {
+                sType = Sand.types[type];1
+            } else {
+                sType = type;
+            }
+            
+            this.newSandSpawn.push({pos: pos, type: sType });
         }
         
         onMouseDown(mousePos) {
             let spawnVec = new iVec2D(mousePos.x, mousePos.y);
             spawnVec.scalarDiv(this.scale);
-            this.newSandSpawn = {pos: spawnVec, type: Sand.types[this.currentSandType] };
+            this.queueCreateSand(spawnVec, this.currentSandType);
         }
         
         reset() {
@@ -154,12 +136,14 @@
             if (!(i_vec2D instanceof iVec2D)) throw new Error('Invalid type for iVec2D operation.');
             this.x += i_vec2D.x;
             this.y += i_vec2D.y;
+            return this;
         }
         
         sub(i_vec2D) {
             if (!(i_vec2D instanceof iVec2D)) throw new Error('Invalid type for iVec2D operation.');
             this.x -= i_vec2D.x;
             this.y -= i_vec2D.y;
+            return this;
         }
         
         dot(i_vec2D) {
@@ -171,28 +155,38 @@
             if (!Number.isInteger(scalar)) throw new Error('Invalid number type for iVec2D!');
             this.x *= scalar;
             this.y *= scalar;
+            return this;
         }
         
         scalarDiv(scalar) {
             if (!Number.isInteger(scalar)) throw new Error('Invalid number type for iVec2D!');
             this.x = Math.floor(this.x / scalar);
             this.y = Math.floor(this.y / scalar);
+            return this;
         }
     }
     window.iVec2D = iVec2D;
     
     class Sand {
-        constructor(pos, type, gridList, gridImgData, size=1) {
+        constructor(pos, type, eng, gridImgData, size=1) {
             if (!Sand.types.includes(type)) throw new Error('Invalid Sand type!');
             if (!(pos instanceof iVec2D)) throw new Error('Sand requires an iVec2D for position.');
-            if (!(gridList instanceof Array)) throw new Error('Sand requires an array for gridList.');
+            if (!(eng instanceof Engine)) throw new Error('Sand requires an Engine type for eng.');
             
             this.pos = pos;
             this.type = type;
-            this.gridList = gridList;
+            this.eng = eng;
+            this.gridList = this.eng.gridList;
             this.gridImgData_ptr = gridImgData;
             this.gridImgData = gridImgData.data;
             this.pixelSize = size;
+            this.isSpawner = false;
+            
+            if (this.type.endsWith('_spawner')) {
+                this.isSpawner = true;
+                this.spawnType = this.type.slice(0, this.type.indexOf('_'));
+                this.spawnVec = (new iVec2D(0, 1)).add(this.pos);
+            }
         }
         
         checkBelow() {
@@ -239,6 +233,12 @@
         }
         
         simTick() {
+            if (this.isSpawner) {
+                this.eng.queueCreateSand(this.spawnVec, this.spawnType);
+                
+                return;
+            }
+            
             let newPos = this.checkBelow();
             if (newPos !== this.pos) {
                 this.gridList[newPos.x][newPos.y] = this;
@@ -280,14 +280,49 @@
                 }
             }
         }
+        
+        static createSand(eng, pos, type) {
+            if (eng.gridList[pos.x][pos.y] !== null) {
+                if (type === 'none') {
+                    let tmp = eng.gridList[pos.x][pos.y];
+                    eng.gridList[pos.x][pos.y] = null;
+                    eng.sandList.splice(eng.sandList.indexOf(tmp), 1);
+                }
+                return;
+            }
+            
+            if (type === 'none') {
+                return;
+            }
+            
+            let s = new Sand(
+                pos,
+                type,
+                eng,
+                eng.gridImgData,
+                eng.scale
+            );
+            
+            eng.gridList[pos.x][pos.y] = s;
+            eng.sandList.push(s);
+            s.renderTick();
+        }
     }
-    Sand.types  = ['none', 'sand', 'water', 'stone'];
+    Sand.types  = ['none', 'sand', 'water', 'stone', 'sand_spawner'];
     Sand.colors = {
         'none': [172, 177, 196],
         'sand': [231, 234, 18],
         'water': [28, 104, 219],
-        'stone': [58, 59, 63]
+        'stone': [58, 59, 63],
+        'sand_spawner': [105, 107, 0]
     };
     window.Sand = Sand;
+    
+    class MapLoader {
+        constructor (mapString) {
+            
+        }
+    }
+    window.MapLoader = MapLoader;
     
 })();
