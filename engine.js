@@ -1,6 +1,28 @@
 (function() {
     "use strict";
     
+    const map = `. . . . . . . . . . . . . . . . . . . . . . . . 4 . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . 3 . 3 . 3 . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . 3 . 3 . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . 3 . 3 . 3 . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . 3 . 3 . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . 3 . 3 . 3 . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . 3 . 3 . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . 3 . 3 . 3 . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . 3 . 3 . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .`;
+    
     class Engine {
         constructor(canvas, ctx) {
             console.log('hello world!');
@@ -13,7 +35,7 @@
             this.width = canvas.width/this.scale;
             this.height = canvas.height/this.scale;
             
-            this.reset();
+            this.reset(new MapLoader(map));
             
             this.currentSandType = 0;
             this.newSandSpawn = [];
@@ -22,11 +44,9 @@
         simTick() {
             let spawnVec = new iVec2D(Math.floor(this.width/2), 0);
             
-            if (this.gridList[spawnVec.x][spawnVec.y] !== null) {
-                this.reset();
-            } else {
-                Sand.createSand(this, spawnVec, 'sand');
-            }
+            //if (this.gridList[spawnVec.x][spawnVec.y] !== null) {
+            //    this.reset();
+            //}
             
             // Spawn new entities
             while (this.newSandSpawn.length > 0) {
@@ -71,21 +91,32 @@
             this.queueCreateSand(spawnVec, this.currentSandType);
         }
         
-        reset() {
-            this.gridList = [];
-            for (var i = 0; i < this.width; i++) {
-                this.gridList.push([]);
-                for (var j = 0; j < this.height; j++) {
-                    this.gridList[i].push(null);
+        reset(map=null) {
+            if (map === null) {
+                this.gridList = [];
+                for (var i = 0; i < this.width; i++) {
+                    this.gridList.push([]);
+                    for (var j = 0; j < this.height; j++) {
+                        this.gridList[i].push(null);
+                    }
                 }
+                
+                this._context.fillStyle = 'rgb(172, 177, 196)';
+                this._context.fillRect(0,0,this.width*this.scale,this.height*this.scale);
+                
+                this.gridImgData = this._context.getImageData(0,0,this.width*this.scale,this.height*this.scale);
+                
+                this.sandList = [];
+            } else {
+                this.gridList = [];
+                this.sandList = [];
+                
+                this._context.fillStyle = 'rgb(172, 177, 196)';
+                this._context.fillRect(0,0,this.width*this.scale,this.height*this.scale);
+                this.gridImgData = this._context.getImageData(0,0,this.width*this.scale,this.height*this.scale);
+                
+                map.loadInto(this);
             }
-            
-            this._context.fillStyle = 'rgb(172, 177, 196)';
-            this._context.fillRect(0,0,this.width*this.scale,this.height*this.scale);
-            
-            this.gridImgData = this._context.getImageData(0,0,this.width*this.scale,this.height*this.scale);
-            
-            this.sandList = [];
         }
     }
     window.Engine = Engine;
@@ -307,19 +338,63 @@
             s.renderTick();
         }
     }
-    Sand.types  = ['none', 'sand', 'water', 'stone', 'sand_spawner'];
+    Sand.types  = ['none', 'sand', 'water', 'stone', 'sand_spawner', 'water_spawner'];
     Sand.colors = {
         'none': [172, 177, 196],
         'sand': [231, 234, 18],
         'water': [28, 104, 219],
         'stone': [58, 59, 63],
-        'sand_spawner': [105, 107, 0]
+        'sand_spawner': [105, 107, 0],
+        'water_spawner': [7, 47, 132]
     };
     window.Sand = Sand;
     
     class MapLoader {
         constructor (mapString) {
+            this.mapString = mapString;
+        }
+        
+        loadInto (eng) {
+            this.width = 0;
+            this.height = 0;
             
+            let lines = this.mapString.split('\n');
+            this.height = lines.length;
+            
+            let x = 0;
+            let y = 0;
+            
+            for (let line of lines) {
+                let grains = line.split(' ');
+                if (this.width == 0) {
+                    this.width = grains.length;
+                    for (var i = 0; i < this.width; i++) {
+                        eng.gridList.push([]);
+                        for (var j = 0; j < this.height; j++) {
+                            eng.gridList[i].push(null);
+                        }
+                    }
+                }
+                
+                let newScale = Math.min(Math.floor(eng._canvas.width / this.width), Math.floor(eng._canvas.height / this.height));
+                eng.scale = newScale;
+                eng.width = eng._canvas.width/eng.scale;
+                eng.height = eng._canvas.height/eng.scale;
+                
+                x = 0;
+                for (let grain of grains) {
+                    let parsedInt = parseInt(grain, 10);
+                    if (isNaN(parsedInt)) {
+                        // Do nothing
+                    } else {
+                        Sand.createSand(eng, new iVec2D(x, y), Sand.types[parsedInt]);
+                    }
+                    
+                    x += 1;
+                }
+                
+                y += 1;
+            }
         }
     }
     window.MapLoader = MapLoader;
