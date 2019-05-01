@@ -27,7 +27,7 @@
 		let canvas;
 		let context;
 		let simulation;
-        let simTickRate = 100;
+        let simTickRate = 10;
         let mouseDrawing = false;
         let mouseCoords = {x: 0, y: 0};
         
@@ -60,7 +60,7 @@
             requestAnimationFrame(renderTick);
             
             // Start sim tick
-            if (simTickRate > 10) {
+            if (simTickRate >= 10) {
                 window.setInterval(simTick, simTickRate);
             } else {
                 window.setZeroTimeout(simTick);
@@ -73,7 +73,7 @@
             if (mouseDrawing) simulation.onMouseDown(mouseCoords);
             
             simulation.simTick();
-            if (simTickRate <= 10) {
+            if (simTickRate < 10) {
                 window.setZeroTimeout(simTick);
             }
         }
