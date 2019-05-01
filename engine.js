@@ -168,7 +168,7 @@
     window.iVec2D = iVec2D;
     
     class Sand {
-        constructor(pos, type, eng, gridImgData, size=1) {
+        constructor(pos, type, eng, size=1) {
             if (!Sand.types.includes(type)) throw new Error('Invalid Sand type!');
             if (!(pos instanceof iVec2D)) throw new Error('Sand requires an iVec2D for position.');
             if (!(eng instanceof Engine)) throw new Error('Sand requires an Engine type for eng.');
@@ -177,15 +177,14 @@
             this.type = type;
             this.eng = eng;
             this.gridList = this.eng.gridList;
-            this.gridImgData_ptr = gridImgData;
-            this.gridImgData = gridImgData.data;
+            this.gridImgData = this.eng.gridImgData.data;
             this.pixelSize = size;
             this.isSpawner = false;
             
             if (this.type.endsWith('_spawner')) {
                 this.isSpawner = true;
                 this.spawnType = this.type.slice(0, this.type.indexOf('_'));
-                this.spawnVec = (new iVec2D(0, 1)).add(this.pos);
+                this.spawnVec = (new iVec2D(0, 1)).add(this.pos);4
             }
         }
         
@@ -273,7 +272,7 @@
             
             for (var yDelta = 0; yDelta < size; yDelta++) {
                 for (var xDelta = 0; xDelta < size; xDelta++) {
-                    let newPos = ((newX + xDelta) + ((newY + yDelta) * (this.gridImgData_ptr.width))) * 4;
+                    let newPos = ((newX + xDelta) + ((newY + yDelta) * (this.eng.gridImgData.width))) * 4;
                     this.gridImgData[newPos] = col[0];
                     this.gridImgData[newPos+1] = col[1];
                     this.gridImgData[newPos+2] = col[2];
@@ -285,6 +284,7 @@
             if (eng.gridList[pos.x][pos.y] !== null) {
                 if (type === 'none') {
                     let tmp = eng.gridList[pos.x][pos.y];
+                    tmp.setPixel(pos.x, pos.y, Sand.colors['none']);
                     eng.gridList[pos.x][pos.y] = null;
                     eng.sandList.splice(eng.sandList.indexOf(tmp), 1);
                 }
@@ -299,7 +299,6 @@
                 pos,
                 type,
                 eng,
-                eng.gridImgData,
                 eng.scale
             );
             
