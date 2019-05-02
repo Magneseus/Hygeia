@@ -359,10 +359,11 @@
             this.height = 0;
             
             let lines = this.mapString.split('\n');
+            lines.reverse();
             this.height = lines.length;
             
             let x = 0;
-            let y = 0;
+            let y = this.height-1;
             
             for (let line of lines) {
                 let grains = line.split(' ');
@@ -393,7 +394,7 @@
                     x += 1;
                 }
                 
-                y += 1;
+                y -= 1;
             }
         }
     }
