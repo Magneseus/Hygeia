@@ -41,20 +41,27 @@
             
             if (p.x <= 0 || p.x >= g.length-1) return this.pos;2
             
-            let goLeftFirst = randGen.coinFlip();
+            let goLeftFirst = null;
             let xDelta = 1;
             
-            if (goLeftFirst) {
-                xDelta = -1;
-            }
-            
-            if (g[p.x + xDelta][p.y+1] === null) {
-                return new iVec2D(p.x + xDelta, p.y+1);
-            } else if (g[p.x - xDelta][p.y+1] === null) {
-                return new iVec2D(p.x - xDelta, p.y+1);
+            if (g[p.x+1][p.y] === null || g[p.x-1][p.y] === null) {
+                goLeftFirst = randGen.coinFlip();
+                
+                if (goLeftFirst) {
+                    xDelta = -1;
+                }
+                
+                if (g[p.x + xDelta][p.y+1] === null) {
+                    return new iVec2D(p.x + xDelta, p.y+1);
+                } else if (g[p.x - xDelta][p.y+1] === null) {
+                    return new iVec2D(p.x - xDelta, p.y+1);
+                }
             }
             
             if (this.type === 'water') {
+                if (goLeftFirst === null) { goLeftFirst = randGen.coinFlip(); }
+                if (goLeftFirst) { xDelta = -1; }
+                
                 if (g[p.x + xDelta][p.y] === null) {
                     return new iVec2D(p.x + xDelta, p.y);
                 } else if (g[p.x - xDelta][p.y] === null) {
