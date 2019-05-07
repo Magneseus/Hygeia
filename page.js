@@ -8,7 +8,7 @@
     let simTickRate = 100;
     let mouseDrawing = false;
     let mouseCoords = {x: 0, y: 0};
-    let startSeed = 384;
+    let startSeed = 994655;
     let outArray = [];
 
     window.addEventListener("load", function() {
@@ -25,8 +25,7 @@
                 let idx = sand.pos.x.toString();
                 idx -= 1;
                 idx /= 2;
-                idx -= 5;
-                idx -= 1;
+                idx -= 13;
                 
                 outArray.push(switchLetters(idx));
             }

@@ -2,7 +2,7 @@
     "use strict";
     
     class Encoder {
-        static encode(message, seed) {
+        static encode(message, seed, len, offsetFunc) {
             message = message.toLowerCase();
             message = message.replace(/[^a-z]/g, '');
             
@@ -72,7 +72,27 @@
                 }
             }
             
-            return msgArr;
+            let emptyString = '';
+            for (var i = 0; i < len; i++) {
+                emptyString = emptyString.concat('. ');
+            }
+            emptyString = emptyString.slice(0, emptyString.length-1);
+            
+            let stringOut = '';
+            for (var i = msgArr.length-1; i >= 0; i--) {
+                let ind = offsetFunc(msgArr[i]);
+                
+                let line = emptyString.slice(0, ind-1);
+                line = line.concat('1');
+                line = line.concat(emptyString.slice(ind, emptyString.length));
+                
+                stringOut = stringOut.concat(emptyString);
+                stringOut = stringOut.concat('\n');
+                stringOut = stringOut.concat(line);
+                stringOut = stringOut.concat('\n');
+            }
+            
+            return stringOut;
         }
     }
     window.Encoder = Encoder;
