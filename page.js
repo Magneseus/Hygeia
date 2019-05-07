@@ -5,7 +5,7 @@
     let fileSelector;
     let mapString = null;
     let simulation;
-    let simTickRate = 500;
+    let simTickRate = 100;
     let mouseDrawing = false;
     let mouseCoords = {x: 0, y: 0};
     let startSeed = 384;
@@ -14,6 +14,8 @@
     window.addEventListener("load", function() {
         canvas = document.getElementById('mainCanvas');
         context = canvas.getContext("2d");
+        
+        randGen.setSeed(startSeed);
         
         // Initialize engine
         simulation = new Engine(canvas, context);
@@ -24,9 +26,9 @@
                 idx -= 1;
                 idx /= 2;
                 idx -= 5;
+                idx -= 1;
                 
                 outArray.push(switchLetters(idx));
-                console.log(switchLetters(idx));
             }
         });
         
@@ -106,9 +108,7 @@
                 */
                 
                 let outWord = outArray.join('');
-                if (outWord == 'help') {
-                    console.log(outWord);
-                }
+                console.log(outWord);
                 outArray = [];
                 
                 startSeed += 1;

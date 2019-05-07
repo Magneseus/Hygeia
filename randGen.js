@@ -4,6 +4,7 @@
     class randGen {
         static setSeed(seed) {
             randGen.seed = seed;
+            randGen.list = [];
         }
         
         static rand32() {
@@ -25,9 +26,12 @@
             let y = ((1<<31) & x) >> 31;
             y = ~y + 1;
             
+            randGen.list.push(y === 1);
+            
             return y === 1;
         }
     }
     randGen.seed = 100000;
+    randGen.list = [];
     window.randGen = randGen;
 })();

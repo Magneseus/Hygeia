@@ -12,7 +12,6 @@
                 pos -= 97;
                 pos *= 2;
                 msgArr.push(pos);
-                console.log('pos: ' + pos);
             }
             
             randGen.setSeed(seed);
@@ -32,14 +31,12 @@
                     let ind = (msgArr.length-1) - idx;
                     let wentLeft = randNumArr.pop();
                     
-                    console.log(ind);
-                    
                     if (wentLeft) {
-                        if (!msgArr[ind]) { throw new Error('out of bounds!'); }
-                        msgArr[ind] += 2;
+                        if (msgArr[ind] === null) { throw new Error('out of bounds! ' + ind); }
+                        msgArr[ind] += 1;
                     } else {
-                        if (!msgArr[ind]) { throw new Error('out of bounds!'); }
-                        msgArr[ind] -= 2;
+                        if (msgArr[ind] === null) { throw new Error('out of bounds! ' + ind); }
+                        msgArr[ind] -= 1;
                     }
                 }
             }
@@ -49,14 +46,12 @@
                 for (var ind = msgArr.length-1; ind >= 0; ind--) {
                     let wentLeft = randNumArr.pop();
                     
-                    console.log(ind);
-                    
                     if (wentLeft) {
-                        if (!msgArr[ind]) { throw new Error('out of bounds!'); }
-                        msgArr[ind] += 2;
+                        if (msgArr[ind] === null) { throw new Error('out of bounds! ' + ind); }
+                        msgArr[ind] += 1;
                     } else {
-                        if (!msgArr[ind]) { throw new Error('out of bounds!'); }
-                        msgArr[ind] -= 2;
+                        if (msgArr[ind] === null) { throw new Error('out of bounds! ' + ind); }
+                        msgArr[ind] -= 1;
                     }
                 }
             }
@@ -67,20 +62,14 @@
                     let ind = numTrailing - idx;
                     let wentLeft = randNumArr.pop();
                     
-                    console.log(ind);
-                    
                     if (wentLeft) {
-                        if (!msgArr[ind]) { throw new Error('out of bounds! ' + ind); }
-                        msgArr[ind] += 2;
+                        if (msgArr[ind] === null) { throw new Error('out of bounds! ' + ind); }
+                        msgArr[ind] += 1;
                     } else {
-                        if (!msgArr[ind]) { throw new Error('out of bounds! ' + ind); }
-                        msgArr[ind] -= 2;
+                        if (msgArr[ind] === null) { throw new Error('out of bounds! ' + ind); }
+                        msgArr[ind] -= 1;
                     }
                 }
-            }
-            
-            for (var i = 0; i < msgArr.length; i++) {
-                msgArr[i] /= 2;
             }
             
             return msgArr;

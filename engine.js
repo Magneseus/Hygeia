@@ -3,8 +3,6 @@
     
     class Engine {
         constructor(canvas, ctx) {
-            console.log('hello world!');
-            
             this.scale = 6;
             
             this._canvas = canvas;
