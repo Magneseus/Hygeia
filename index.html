@@ -29,6 +29,22 @@
     <script type="text/javascript" src="engine.js"></script>
     
     <script type="text/javascript" src="page.js"></script>
+    <script type="text/javascript" src="encoder.js"></script>
+    
+    
+    <script>
+        'use strict';
+        
+        let arr = Encoder.encode('once', 384);
+        for (var i = 0; i < arr.length; i++) {
+            arr[i] *= 2;
+            arr[i] *= 2;
+            arr[i] += 26;
+            arr[i] += 1;
+        }
+        console.log(arr);
+    </script>
+    
 </head>
 <body>
     <canvas id="mainCanvas" onmousedown="" width="1200" height="600"></canvas>

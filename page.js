@@ -5,15 +5,11 @@
     let fileSelector;
     let mapString = null;
     let simulation;
-    let simTickRate = 10;
+    let simTickRate = 500;
     let mouseDrawing = false;
     let mouseCoords = {x: 0, y: 0};
-    let startSeed = 1;
-    let countStruct = {};
-    
-    for (var i = 0; i < 26; i++) {
-        countStruct[i.toString()] = 0;
-    }
+    let startSeed = 384;
+    let outArray = [];
 
     window.addEventListener("load", function() {
         canvas = document.getElementById('mainCanvas');
@@ -21,6 +17,18 @@
         
         // Initialize engine
         simulation = new Engine(canvas, context);
+        
+        simulation.setOnGrainSettled((sand) => {
+            if (sand.type === 'sand') {
+                let idx = sand.pos.x.toString();
+                idx -= 1;
+                idx /= 2;
+                idx -= 5;
+                
+                outArray.push(switchLetters(idx));
+                console.log(switchLetters(idx));
+            }
+        });
         
         // Setup mouse movement
         canvas.addEventListener('mousedown', args => {
@@ -74,6 +82,7 @@
         
         if (mapString !== null) {
             if (!simChanged) {
+                /*
                 let grains = simulation.sandList;
                 let output = grains.reduce((acc, cur) => {
                     if (cur.type === 'sand') {
@@ -94,6 +103,14 @@
                 
                 if (startSeed % 100 == 0) { console.log('Seed { ' + startSeed + ' } completed simulation. ' + JSON.stringify(output)); }
                 
+                */
+                
+                let outWord = outArray.join('');
+                if (outWord == 'help') {
+                    console.log(outWord);
+                }
+                outArray = [];
+                
                 startSeed += 1;
                 randGen.setSeed(startSeed);
                 simulation.reset(new MapLoader(mapString));
@@ -109,6 +126,20 @@
         //simTick();
         simulation.renderTick(canvas, context);
         requestAnimationFrame(renderTick);
+    }
+    
+    function switchLetters(letter) {
+        let freqTable = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'];
+        /*
+        let freqTable = ['e','t','a','o','i','n','s','h','r','d','l','c','u','m','w','f','g','y','p','b','v','k','j','x','q','z'];
+        letter -= 13;
+        letter *= 2;
+        if (letter < 0) {
+            letter *= -1;
+            letter -= 1;
+        }
+        */
+        return freqTable[letter];
     }
 
     // https://stackoverflow.com/questions/17130395/real-mouse-position-in-canvas

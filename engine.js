@@ -27,8 +27,12 @@
             let simChanged = false;
             
             this.sandList.forEach((sand) => {
-                if (sand.simTick()) {
-                    simChanged = true;
+                if (sand.dirty) {
+                    if (sand.simTick()) {
+                        simChanged = true;
+                    } else {
+                        this.onGrainSettledCallback(sand);
+                    }
                 }
             });
             
@@ -45,6 +49,10 @@
         
         renderTick(cnv, ctx) {
             ctx.putImageData(this.gridImgData, 0, 0);
+        }
+        
+        setOnGrainSettled(callback) {
+            this.onGrainSettledCallback = callback;
         }
         
         onKeyboardDown(event) {

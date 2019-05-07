@@ -14,6 +14,7 @@
             this.gridImgData = this.eng.gridImgData.data;
             this.pixelSize = size;
             this.isSpawner = false;
+            this.dirty = true;
             
             if (this.type.endsWith('_spawner')) {
                 this.isSpawner = true;
@@ -79,6 +80,10 @@
                 return false;
             }
             
+            if (!this.dirty) {
+                return false;
+            }
+            
             let newPos = this.checkBelow();
             if (newPos !== this.pos) {
                 this.gridList[newPos.x][newPos.y] = this;
@@ -87,10 +92,14 @@
                 this.setPixel(newPos.x, newPos.y, Sand.colors[this.type]);
                 this.setPixel(this.pos.x, this.pos.y, Sand.colors['none']);
                 
+                this.setAboveDirty();
+                
                 this.pos = newPos;
                 
                 return true;
             }
+            
+            this.dirty = false;
             
             return false;
         }
@@ -105,6 +114,15 @@
             let oldPos = this.pos;
             this.pos = swSand.pos;
             swSand.pos = oldPos;
+            
+            this.dirty = true;
+            swSand.dirty = true;
+        }
+        
+        setAboveDirty() {
+            if (this.gridList[this.pos.x+1][this.pos.y-1]) { this.gridList[this.pos.x+1][this.pos.y-1].dirty = true; }
+            if (this.gridList[this.pos.x][this.pos.y-1]) { this.gridList[this.pos.x][this.pos.y-1].dirty = true; }
+            if (this.gridList[this.pos.x-1][this.pos.y-1]) { this.gridList[this.pos.x-1][this.pos.y-1].dirty = true; }
         }
         
         renderTick() {
@@ -130,6 +148,7 @@
                 if (type === 'none') {
                     let tmp = eng.gridList[pos.x][pos.y];
                     tmp.setPixel(pos.x, pos.y, Sand.colors['none']);
+                    tmp.setAboveDirty();
                     eng.gridList[pos.x][pos.y] = null;
                     eng.sandList.splice(eng.sandList.indexOf(tmp), 1);
                     
